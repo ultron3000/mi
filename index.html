@@ -1,111 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Slideshow</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mission Impossible Movie Collection</title>
   <style>
-    * {
+    body {
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background-color: #000;
       color: white;
-      font-family: Arial, sans-serif;
+      text-align: center;
+      background: url('https://m.media-amazon.com/images/I/61cN3tAsomL._AC_UF1000,1000_QL80_.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.7);
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
+      justify-content: flex-start;
+      padding: 30px 15px;
     }
-    .slideshow-container {
-      position: relative;
-      width: 80%;
-      max-width: 800px;
-      overflow: hidden;
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 40px;
+      text-shadow: 2px 2px #000;
+      text-transform: uppercase;
+      padding-top: 20%;
     }
-    .slides {
+    .movie-container {
       display: flex;
+      flex-direction: column;
+      gap: 20px;
       width: 100%;
-      transition: transform 0.5s ease-in-out;
+      max-width: 600px;
     }
-    .slides img {
-      width: 100%;
-      border-radius: 10px;
+    .movie-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid #00aaff;
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      backdrop-filter: blur(6px);
+      transition: transform 0.3s, background 0.3s;
     }
-    .dot-container {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
+    .movie-card:hover {
+      transform: scale(1.03);
+      background: rgba(0, 170, 255, 0.2);
     }
-    .dot {
-      height: 15px;
-      width: 15px;
-      margin: 0 5px;
-      background-color: rgba(255, 255, 255, 0.5);
-      border-radius: 50%;
-      transition: background-color 0.3s;
+    .movie-card a {
+      text-decoration: none;
+      color: #ffffff;
+      font-size: 1.2rem;
     }
-    .active {
-      background-color: #fff;
+
+    @media(min-width: 768px) {
+      .movie-container {
+        flex-direction: row;
+        justify-content: center;
+        max-width: 900px;
+      }
+      .movie-card {
+        flex: 1;
+      }
     }
   </style>
 </head>
 <body>
-
-<div class="slideshow-container">
-  <div class="slides">
-    <img src="/mnt/data/Screenshot%202024-09-24%20052729.png" alt="Image 1">
-    <img src="/mnt/data/Screenshot%202024-09-24%20053154.png" alt="Image 2">
-    <img src="/mnt/data/Screenshot%202024-11-26%20155019.png" alt="Image 3">
-    <img src="/mnt/data/Screenshot%202024-12-07%20170409.png" alt="Image 4">
-    <img src="https://images7.alphacoders.com/117/1173804.jpg" alt="Iron Man Image">
-    <img src="https://www.letteringale.com/wp-content/uploads/2023/09/Stark-Industries-Logo-HD-Wallpaper-Download.jpg" alt="Stark Industries">
-    <img src="https://static.vecteezy.com/system/resources/previews/004/723/547/non_2x/kpl-khandelwal-premier-league-logo-free-vector.jpg" alt="KPL Logo">
-    <img src="https://static.vecteezy.com/system/resources/previews/004/723/547/non_2x/kpl-khandelwal-premier-league-logo-free-vector.jpg" alt="KPL Logo 2">
+  <div class="overlay">
+    <h1>Mission Impossible Movie Collection</h1>
+    <div class="movie-container">
+      <div class="movie-card"><a href="missionimpossible.html">Mission: Impossible (1996)</a></div>
+      <div class="movie-card"><a href="missionimpossible2.html">Mission: Impossible II (2000)</a></div>
+      <div class="movie-card"><a href="missionimpossible3.html">Mission: Impossible III (2006)</a></div>
+      <div class="movie-card"><a href="ghostprotocol.html">Mission: Impossible - Ghost Protocol (2011)</a></div>
+      <div class="movie-card"><a href="roguenation.html">Mission: Impossible - Rogue Nation (2015)</a></div>
+      <div class="movie-card"><a href="fallout.html">Mission: Impossible - Fallout (2018)</a></div>
+      <div class="movie-card"><a href="deadreckoning.html">Mission: Impossible - Dead Reckoning Part One (2023)</a></div>
+    </div>
   </div>
-
-  <div class="dot-container">
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
-  </div>
-</div>
-
-<script>
-  let currentIndex = 0;
-  const slides = document.querySelector('.slides');
-  const dots = document.querySelectorAll('.dot');
-
-  function showSlide(index) {
-    currentIndex = index;
-    slides.style.transform = `translateX(-${100 * index}%)`;
-    dots.forEach((dot, i) => {
-      dot.classList.remove('active');
-      if (i === index) {
-        dot.classList.add('active');
-      }
-    });
-  }
-
-  function nextSlide() {
-    currentIndex = (currentIndex + 1) % dots.length;
-    showSlide(currentIndex);
-  }
-
-  setInterval(nextSlide, 3000); // Change image every 3 seconds
-
-  // Initialize the slideshow
-  showSlide(currentIndex);
-</script>
-
 </body>
 </html>
