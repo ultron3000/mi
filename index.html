@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Slideshow</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .slideshow-container {
+      position: relative;
+      width: 80%;
+      max-width: 800px;
+      overflow: hidden;
+    }
+    .slides {
+      display: flex;
+      width: 100%;
+      transition: transform 0.5s ease-in-out;
+    }
+    .slides img {
+      width: 100%;
+      border-radius: 10px;
+    }
+    .dot-container {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+    }
+    .dot {
+      height: 15px;
+      width: 15px;
+      margin: 0 5px;
+      background-color: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      transition: background-color 0.3s;
+    }
+    .active {
+      background-color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="slideshow-container">
+  <div class="slides">
+    <img src="/mnt/data/Screenshot%202024-09-24%20052729.png" alt="Image 1">
+    <img src="/mnt/data/Screenshot%202024-09-24%20053154.png" alt="Image 2">
+    <img src="/mnt/data/Screenshot%202024-11-26%20155019.png" alt="Image 3">
+    <img src="/mnt/data/Screenshot%202024-12-07%20170409.png" alt="Image 4">
+    <img src="https://images7.alphacoders.com/117/1173804.jpg" alt="Iron Man Image">
+    <img src="https://www.letteringale.com/wp-content/uploads/2023/09/Stark-Industries-Logo-HD-Wallpaper-Download.jpg" alt="Stark Industries">
+    <img src="https://static.vecteezy.com/system/resources/previews/004/723/547/non_2x/kpl-khandelwal-premier-league-logo-free-vector.jpg" alt="KPL Logo">
+    <img src="https://static.vecteezy.com/system/resources/previews/004/723/547/non_2x/kpl-khandelwal-premier-league-logo-free-vector.jpg" alt="KPL Logo 2">
+  </div>
+
+  <div class="dot-container">
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+  </div>
+</div>
+
+<script>
+  let currentIndex = 0;
+  const slides = document.querySelector('.slides');
+  const dots = document.querySelectorAll('.dot');
+
+  function showSlide(index) {
+    currentIndex = index;
+    slides.style.transform = `translateX(-${100 * index}%)`;
+    dots.forEach((dot, i) => {
+      dot.classList.remove('active');
+      if (i === index) {
+        dot.classList.add('active');
+      }
+    });
+  }
+
+  function nextSlide() {
+    currentIndex = (currentIndex + 1) % dots.length;
+    showSlide(currentIndex);
+  }
+
+  setInterval(nextSlide, 3000); // Change image every 3 seconds
+
+  // Initialize the slideshow
+  showSlide(currentIndex);
+</script>
+
+</body>
+</html>
