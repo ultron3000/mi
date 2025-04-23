@@ -45,5 +45,15 @@
 
   <script>
     const video = document.getElementById('video');
-    const videoSrc = "https://f2.megacdn.co:2228/v3-hls-playback/1b5b6f5d29f1f9f250fbb7f8cc9f5e0f9b3d33743e8c5270553d72c855a68c4c2969bb12230512977ad42d64351dd9d299e6ed271c94067885986428ef6451fcf4447fd2081ca717b26a3e282ecd7dec9f92694114a84bc5d48c8bd6d734fe36bdb7271cdb701df2ba080c398f012e0a3d2c719770ee66afc7d0cd3bf891ef374b5e6176039bfc556e83938bc84ad5b6686ea220b4e421ecf42129687fbc2b39262256dbf096da29d3a066cfb0d546623bc70d660af90804607d82fb686f7cba/1080/index.m3u8"; // Replace with actual video stream link
+    const videoSrc = "https://sojg.yevettesha.sbs:443/v4/6s/mphx1/index-f2-v1-a1.txt"; // Replace with actual video stream link
 
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(videoSrc);
+      hls.attachMedia(video);
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = videoSrc;
+    }
+  </script>
+</body>
+</html>
