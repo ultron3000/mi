@@ -79,7 +79,6 @@
 
 <h1 id="movie-title">Loading...</h1>
 
-<!-- Regular video player -->
 <video id="video" controls autoplay crossorigin="anonymous"></video>
 <br>
 <button class="caption-button" id="toggle-captions">Toggle Subtitles</button>
@@ -104,24 +103,27 @@ showSpinner();
 
 // Special handling ONLY for Final Reckoning
 if (title && title.trim().toLowerCase() === "final reckoning") {
-  video.remove();            // Remove the default video player
-  toggleBtn.remove();        // Remove subtitle button
+  video.remove();            
+  toggleBtn.remove();        
   hideSpinner();
 
   const iframe = document.createElement("iframe");
   iframe.src = videoUrl;
   iframe.allowFullscreen = true;
-  iframe.style.width = "90%";
-  iframe.style.maxWidth = "1000px";
-  iframe.style.height = "560px";
   iframe.style.border = "3px solid #ffcc00";
   iframe.style.borderRadius = "15px";
+  iframe.style.background = "#000";
+  iframe.style.width = "90vw";
+  iframe.style.maxWidth = "1000px";
+  iframe.style.height = "56.25vw";
+  iframe.style.maxHeight = "562px";
+  iframe.style.display = "block";
+  iframe.style.margin = "0 auto";
   document.body.insertBefore(iframe, document.querySelector("br"));
 } else {
   playVideo(videoUrl);
 }
 
-// Only touch HLS logic for other movies
 function showSpinner() {
   spinner.style.display = "block";
   loadingText.style.display = "block";
@@ -162,7 +164,6 @@ function playVideo(url) {
   }
 }
 
-// Subtitles only for non-pCloud
 if (subtitleUrl) {
   const track = document.createElement('track');
   track.kind = 'subtitles';
@@ -173,7 +174,6 @@ if (subtitleUrl) {
   video.appendChild(track);
 }
 
-// Save playback progress
 setInterval(() => {
   if (!isNaN(video.currentTime)) {
     localStorage.setItem(saveKey, video.currentTime);
@@ -186,14 +186,12 @@ window.addEventListener("beforeunload", () => {
   }
 });
 
-// Subtitle toggle
 toggleBtn.addEventListener("click", () => {
   for (const track of video.textTracks) {
     track.mode = track.mode === "showing" ? "hidden" : "showing";
   }
 });
 
-// Keyboard shortcuts
 document.addEventListener("keydown", (e) => {
   if (e.code === "ArrowRight") video.currentTime += 10;
   else if (e.code === "ArrowLeft") video.currentTime -= 10;
