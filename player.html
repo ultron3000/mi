@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Movie Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
@@ -17,7 +17,7 @@
       margin-bottom: 20px;
       font-size: 2em;
     }
-    video, iframe {
+    video {
       width: 90%;
       max-width: 1000px;
       border: 3px solid #ffcc00;
@@ -80,6 +80,7 @@
 <h1 id="movie-title">Loading...</h1>
 
 <video id="video" controls autoplay crossorigin="anonymous"></video>
+
 <br>
 <button class="caption-button" id="toggle-captions">Toggle Subtitles</button>
 <br><br>
@@ -91,15 +92,17 @@ const params = new URLSearchParams(window.location.search);
 const title = params.get('title');
 const videoUrl = params.get('video');
 const subtitleUrl = params.get('subtitle');
-const saveKey = `continue-${title}`;
+const index = parseInt(params.get('index'), 10);
 
 const movieTitle = document.getElementById('movie-title');
 const video = document.getElementById('video');
 const spinner = document.getElementById('loading-spinner');
 const loadingText = document.getElementById('loading-text');
 const toggleBtn = document.getElementById('toggle-captions');
+const saveKey = continue-${title};
 
-movieTitle.textContent = title || "Movie";
+movieTitle.textContent = title;
+showSpinner();
 
 function showSpinner() {
   spinner.style.display = "block";
@@ -111,7 +114,7 @@ function hideSpinner() {
   loadingText.style.display = "none";
 }
 
-function loadHLS(url) {
+function playVideo(url) {
   if (Hls.isSupported()) {
     const hls = new Hls();
     hls.loadSource(url);
@@ -122,6 +125,14 @@ function loadHLS(url) {
       const lastTime = localStorage.getItem(saveKey);
       if (lastTime) video.currentTime = parseFloat(lastTime);
     });
+    hls.on(Hls.Events.ERROR, function (event, data) {
+      if (data.fatal) {
+        alert("A fatal playback error occurred: " + data.details);
+      } else {
+        console.warn("Non-fatal HLS error:", data.details);
+        // Don't alert the user
+      }
+    });
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
     video.src = url;
     video.addEventListener("loadedmetadata", () => {
@@ -131,43 +142,14 @@ function loadHLS(url) {
       if (lastTime) video.currentTime = parseFloat(lastTime);
     });
   } else {
-    alert("HLS not supported. Returning to homepage.");
+    alert("Your browser doesn't support HLS!");
     window.location.href = "index.html";
   }
 }
 
-function loadIframe(url) {
-  video.style.display = "none";
-  toggleBtn.style.display = "none";
-  hideSpinner();
+playVideo(videoUrl);
 
-  const iframe = document.createElement("iframe");
-  iframe.src = url;
-  iframe.allowFullscreen = true;
-  iframe.style.width = "90%";
-  iframe.style.height = "600px";
-  iframe.style.border = "3px solid #ffcc00";
-  iframe.style.borderRadius = "15px";
-  document.body.insertBefore(iframe, toggleBtn);
-}
-
-function startPlayback() {
-  showSpinner();
-  if (!videoUrl) {
-    alert("No video URL provided.");
-    return;
-  }
-
-  if (videoUrl.endsWith(".m3u8")) {
-    loadHLS(videoUrl);
-  } else {
-    loadIframe(videoUrl);
-  }
-}
-
-startPlayback();
-
-// Subtitle support for HLS
+// Load subtitle if provided
 if (subtitleUrl) {
   const track = document.createElement('track');
   track.kind = 'subtitles';
@@ -185,6 +167,7 @@ setInterval(() => {
   }
 }, 5000);
 
+// Save progress on exit
 window.addEventListener("beforeunload", () => {
   if (!isNaN(video.currentTime)) {
     localStorage.setItem(saveKey, video.currentTime);
@@ -198,7 +181,7 @@ toggleBtn.addEventListener("click", () => {
   }
 });
 
-// Keyboard controls
+// Keyboard shortcuts
 document.addEventListener("keydown", (e) => {
   if (e.code === "ArrowRight") video.currentTime += 10;
   else if (e.code === "ArrowLeft") video.currentTime -= 10;
