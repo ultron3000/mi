@@ -23,7 +23,6 @@
       border: 3px solid #ffcc00;
       border-radius: 15px;
       background: #000;
-      height: 560px;
     }
     #loading-spinner {
       display: none;
@@ -80,15 +79,12 @@
 
 <h1 id="movie-title">Loading...</h1>
 
-<!-- Video Element -->
+<!-- Regular video player -->
 <video id="video" controls autoplay crossorigin="anonymous"></video>
-
-<!-- Subtitle toggle -->
 <br>
 <button class="caption-button" id="toggle-captions">Toggle Subtitles</button>
 <br><br>
 
-<!-- Back link -->
 <a href="index.html">← Back to Movies</a>
 
 <script>
@@ -106,25 +102,26 @@ const saveKey = `continue-${title}`;
 movieTitle.textContent = title;
 showSpinner();
 
-// Special case: Final Reckoning (use iframe for pCloud)
-if (title && title.toLowerCase().includes("final reckoning")) {
-  video.style.display = "none";
-  toggleBtn.style.display = "none";
+// Special handling ONLY for Final Reckoning
+if (title && title.trim().toLowerCase() === "final reckoning") {
+  video.remove();            // Remove the default video player
+  toggleBtn.remove();        // Remove subtitle button
   hideSpinner();
 
   const iframe = document.createElement("iframe");
   iframe.src = videoUrl;
   iframe.allowFullscreen = true;
-  iframe.style.border = "3px solid #ffcc00";
-  iframe.style.borderRadius = "15px";
   iframe.style.width = "90%";
   iframe.style.maxWidth = "1000px";
   iframe.style.height = "560px";
-  document.body.insertBefore(iframe, toggleBtn);
+  iframe.style.border = "3px solid #ffcc00";
+  iframe.style.borderRadius = "15px";
+  document.body.insertBefore(iframe, document.querySelector("br"));
 } else {
   playVideo(videoUrl);
 }
 
+// Only touch HLS logic for other movies
 function showSpinner() {
   spinner.style.display = "block";
   loadingText.style.display = "block";
@@ -165,7 +162,7 @@ function playVideo(url) {
   }
 }
 
-// Load subtitle if provided
+// Subtitles only for non-pCloud
 if (subtitleUrl) {
   const track = document.createElement('track');
   track.kind = 'subtitles';
@@ -176,21 +173,20 @@ if (subtitleUrl) {
   video.appendChild(track);
 }
 
-// Save progress every 5 seconds
+// Save playback progress
 setInterval(() => {
   if (!isNaN(video.currentTime)) {
     localStorage.setItem(saveKey, video.currentTime);
   }
 }, 5000);
 
-// Save progress on exit
 window.addEventListener("beforeunload", () => {
   if (!isNaN(video.currentTime)) {
     localStorage.setItem(saveKey, video.currentTime);
   }
 });
 
-// Toggle subtitles
+// Subtitle toggle
 toggleBtn.addEventListener("click", () => {
   for (const track of video.textTracks) {
     track.mode = track.mode === "showing" ? "hidden" : "showing";
