@@ -91,17 +91,15 @@ const params = new URLSearchParams(window.location.search);
 const title = params.get('title');
 const videoUrl = params.get('video');
 const subtitleUrl = params.get('subtitle');
-const index = parseInt(params.get('index'), 10);
+const saveKey = `continue-${title}`;
 
 const movieTitle = document.getElementById('movie-title');
 const video = document.getElementById('video');
 const spinner = document.getElementById('loading-spinner');
 const loadingText = document.getElementById('loading-text');
 const toggleBtn = document.getElementById('toggle-captions');
-const saveKey = `continue-${title}`;
 
-movieTitle.textContent = title;
-showSpinner();
+movieTitle.textContent = title || "Movie";
 
 function showSpinner() {
   spinner.style.display = "block";
@@ -113,58 +111,63 @@ function hideSpinner() {
   loadingText.style.display = "none";
 }
 
-function playVideo(url) {
-  const isHLS = url.endsWith(".m3u8");
-
-  if (isHLS) {
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(url);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play();
-        hideSpinner();
-        const lastTime = localStorage.getItem(saveKey);
-        if (lastTime) video.currentTime = parseFloat(lastTime);
-      });
-      hls.on(Hls.Events.ERROR, function (event, data) {
-        if (data.fatal) {
-          alert("A fatal playback error occurred: " + data.details);
-        }
-      });
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = url;
-      video.addEventListener("loadedmetadata", () => {
-        video.play();
-        hideSpinner();
-        const lastTime = localStorage.getItem(saveKey);
-        if (lastTime) video.currentTime = parseFloat(lastTime);
-      });
-    } else {
-      alert("Your browser doesn't support HLS!");
-      window.location.href = "index.html";
-    }
+function loadHLS(url) {
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play();
+      hideSpinner();
+      const lastTime = localStorage.getItem(saveKey);
+      if (lastTime) video.currentTime = parseFloat(lastTime);
+    });
+  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    video.src = url;
+    video.addEventListener("loadedmetadata", () => {
+      video.play();
+      hideSpinner();
+      const lastTime = localStorage.getItem(saveKey);
+      if (lastTime) video.currentTime = parseFloat(lastTime);
+    });
   } else {
-    // Fallback to iframe for non-HLS (Google Drive, pCloud)
-    video.style.display = "none";
-    toggleBtn.style.display = "none";
-    hideSpinner();
-
-    const iframe = document.createElement("iframe");
-    iframe.src = url;
-    iframe.width = "90%";
-    iframe.height = "600";
-    iframe.allowFullscreen = true;
-    iframe.style.border = "3px solid #ffcc00";
-    iframe.style.borderRadius = "15px";
-    iframe.style.background = "#000";
-    document.body.insertBefore(iframe, document.querySelector("br"));
+    alert("HLS not supported. Returning to homepage.");
+    window.location.href = "index.html";
   }
 }
 
-playVideo(videoUrl);
+function loadIframe(url) {
+  video.style.display = "none";
+  toggleBtn.style.display = "none";
+  hideSpinner();
 
-// Load subtitle if provided
+  const iframe = document.createElement("iframe");
+  iframe.src = url;
+  iframe.allowFullscreen = true;
+  iframe.style.width = "90%";
+  iframe.style.height = "600px";
+  iframe.style.border = "3px solid #ffcc00";
+  iframe.style.borderRadius = "15px";
+  document.body.insertBefore(iframe, toggleBtn);
+}
+
+function startPlayback() {
+  showSpinner();
+  if (!videoUrl) {
+    alert("No video URL provided.");
+    return;
+  }
+
+  if (videoUrl.endsWith(".m3u8")) {
+    loadHLS(videoUrl);
+  } else {
+    loadIframe(videoUrl);
+  }
+}
+
+startPlayback();
+
+// Subtitle support for HLS
 if (subtitleUrl) {
   const track = document.createElement('track');
   track.kind = 'subtitles';
@@ -182,7 +185,6 @@ setInterval(() => {
   }
 }, 5000);
 
-// Save progress on exit
 window.addEventListener("beforeunload", () => {
   if (!isNaN(video.currentTime)) {
     localStorage.setItem(saveKey, video.currentTime);
@@ -196,7 +198,7 @@ toggleBtn.addEventListener("click", () => {
   }
 });
 
-// Keyboard shortcuts
+// Keyboard controls
 document.addEventListener("keydown", (e) => {
   if (e.code === "ArrowRight") video.currentTime += 10;
   else if (e.code === "ArrowLeft") video.currentTime -= 10;
