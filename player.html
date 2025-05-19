@@ -17,7 +17,7 @@
       margin-bottom: 20px;
       font-size: 2em;
     }
-    video, iframe {
+    video {
       width: 90%;
       max-width: 1000px;
       border: 3px solid #ffcc00;
@@ -80,6 +80,7 @@
 <h1 id="movie-title">Loading...</h1>
 
 <video id="video" controls autoplay crossorigin="anonymous"></video>
+
 <br>
 <button class="caption-button" id="toggle-captions">Toggle Subtitles</button>
 <br><br>
@@ -91,6 +92,8 @@ const params = new URLSearchParams(window.location.search);
 const title = params.get('title');
 const videoUrl = params.get('video');
 const subtitleUrl = params.get('subtitle');
+const index = parseInt(params.get('index'), 10);
+
 const movieTitle = document.getElementById('movie-title');
 const video = document.getElementById('video');
 const spinner = document.getElementById('loading-spinner');
@@ -100,29 +103,6 @@ const saveKey = `continue-${title}`;
 
 movieTitle.textContent = title;
 showSpinner();
-
-// Special handling ONLY for Final Reckoning
-if (title && title.trim().toLowerCase() === "final reckoning") {
-  video.remove();            
-  toggleBtn.remove();        
-  hideSpinner();
-
-  const iframe = document.createElement("iframe");
-  iframe.src = videoUrl;
-  iframe.allowFullscreen = true;
-  iframe.style.border = "3px solid #ffcc00";
-  iframe.style.borderRadius = "15px";
-  iframe.style.background = "#000";
-  iframe.style.width = "90vw";
-  iframe.style.maxWidth = "1000px";
-  iframe.style.height = "56.25vw";
-  iframe.style.maxHeight = "562px";
-  iframe.style.display = "block";
-  iframe.style.margin = "0 auto";
-  document.body.insertBefore(iframe, document.querySelector("br"));
-} else {
-  playVideo(videoUrl);
-}
 
 function showSpinner() {
   spinner.style.display = "block";
@@ -148,6 +128,9 @@ function playVideo(url) {
     hls.on(Hls.Events.ERROR, function (event, data) {
       if (data.fatal) {
         alert("A fatal playback error occurred: " + data.details);
+      } else {
+        console.warn("Non-fatal HLS error:", data.details);
+        // Don't alert the user
       }
     });
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -164,6 +147,9 @@ function playVideo(url) {
   }
 }
 
+playVideo(videoUrl);
+
+// Load subtitle if provided
 if (subtitleUrl) {
   const track = document.createElement('track');
   track.kind = 'subtitles';
@@ -174,24 +160,28 @@ if (subtitleUrl) {
   video.appendChild(track);
 }
 
+// Save progress every 5 seconds
 setInterval(() => {
   if (!isNaN(video.currentTime)) {
     localStorage.setItem(saveKey, video.currentTime);
   }
 }, 5000);
 
+// Save progress on exit
 window.addEventListener("beforeunload", () => {
   if (!isNaN(video.currentTime)) {
     localStorage.setItem(saveKey, video.currentTime);
   }
 });
 
+// Toggle subtitles
 toggleBtn.addEventListener("click", () => {
   for (const track of video.textTracks) {
     track.mode = track.mode === "showing" ? "hidden" : "showing";
   }
 });
 
+// Keyboard shortcuts
 document.addEventListener("keydown", (e) => {
   if (e.code === "ArrowRight") video.currentTime += 10;
   else if (e.code === "ArrowLeft") video.currentTime -= 10;
