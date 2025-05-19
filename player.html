@@ -17,12 +17,13 @@
       margin-bottom: 20px;
       font-size: 2em;
     }
-    video {
+    video, iframe {
       width: 90%;
       max-width: 1000px;
       border: 3px solid #ffcc00;
       border-radius: 15px;
       background: #000;
+      height: 560px;
     }
     #loading-spinner {
       display: none;
@@ -79,12 +80,15 @@
 
 <h1 id="movie-title">Loading...</h1>
 
+<!-- Video Element -->
 <video id="video" controls autoplay crossorigin="anonymous"></video>
 
+<!-- Subtitle toggle -->
 <br>
 <button class="caption-button" id="toggle-captions">Toggle Subtitles</button>
 <br><br>
 
+<!-- Back link -->
 <a href="index.html">← Back to Movies</a>
 
 <script>
@@ -92,8 +96,6 @@ const params = new URLSearchParams(window.location.search);
 const title = params.get('title');
 const videoUrl = params.get('video');
 const subtitleUrl = params.get('subtitle');
-const index = parseInt(params.get('index'), 10);
-
 const movieTitle = document.getElementById('movie-title');
 const video = document.getElementById('video');
 const spinner = document.getElementById('loading-spinner');
@@ -103,6 +105,25 @@ const saveKey = `continue-${title}`;
 
 movieTitle.textContent = title;
 showSpinner();
+
+// Special case: Final Reckoning (use iframe for pCloud)
+if (title && title.toLowerCase().includes("final reckoning")) {
+  video.style.display = "none";
+  toggleBtn.style.display = "none";
+  hideSpinner();
+
+  const iframe = document.createElement("iframe");
+  iframe.src = videoUrl;
+  iframe.allowFullscreen = true;
+  iframe.style.border = "3px solid #ffcc00";
+  iframe.style.borderRadius = "15px";
+  iframe.style.width = "90%";
+  iframe.style.maxWidth = "1000px";
+  iframe.style.height = "560px";
+  document.body.insertBefore(iframe, toggleBtn);
+} else {
+  playVideo(videoUrl);
+}
 
 function showSpinner() {
   spinner.style.display = "block";
@@ -128,9 +149,6 @@ function playVideo(url) {
     hls.on(Hls.Events.ERROR, function (event, data) {
       if (data.fatal) {
         alert("A fatal playback error occurred: " + data.details);
-      } else {
-        console.warn("Non-fatal HLS error:", data.details);
-        // Don't alert the user
       }
     });
   } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -146,8 +164,6 @@ function playVideo(url) {
     window.location.href = "index.html";
   }
 }
-
-playVideo(videoUrl);
 
 // Load subtitle if provided
 if (subtitleUrl) {
