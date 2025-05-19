@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Movie Player</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
@@ -17,7 +17,7 @@
       margin-bottom: 20px;
       font-size: 2em;
     }
-    video {
+    video, iframe {
       width: 90%;
       max-width: 1000px;
       border: 3px solid #ffcc00;
@@ -80,7 +80,6 @@
 <h1 id="movie-title">Loading...</h1>
 
 <video id="video" controls autoplay crossorigin="anonymous"></video>
-
 <br>
 <button class="caption-button" id="toggle-captions">Toggle Subtitles</button>
 <br><br>
@@ -115,35 +114,51 @@ function hideSpinner() {
 }
 
 function playVideo(url) {
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(url);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      video.play();
-      hideSpinner();
-      const lastTime = localStorage.getItem(saveKey);
-      if (lastTime) video.currentTime = parseFloat(lastTime);
-    });
-    hls.on(Hls.Events.ERROR, function (event, data) {
-      if (data.fatal) {
-        alert("A fatal playback error occurred: " + data.details);
-      } else {
-        console.warn("Non-fatal HLS error:", data.details);
-        // Don't alert the user
-      }
-    });
-  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-    video.src = url;
-    video.addEventListener("loadedmetadata", () => {
-      video.play();
-      hideSpinner();
-      const lastTime = localStorage.getItem(saveKey);
-      if (lastTime) video.currentTime = parseFloat(lastTime);
-    });
+  const isHLS = url.endsWith(".m3u8");
+
+  if (isHLS) {
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play();
+        hideSpinner();
+        const lastTime = localStorage.getItem(saveKey);
+        if (lastTime) video.currentTime = parseFloat(lastTime);
+      });
+      hls.on(Hls.Events.ERROR, function (event, data) {
+        if (data.fatal) {
+          alert("A fatal playback error occurred: " + data.details);
+        }
+      });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = url;
+      video.addEventListener("loadedmetadata", () => {
+        video.play();
+        hideSpinner();
+        const lastTime = localStorage.getItem(saveKey);
+        if (lastTime) video.currentTime = parseFloat(lastTime);
+      });
+    } else {
+      alert("Your browser doesn't support HLS!");
+      window.location.href = "index.html";
+    }
   } else {
-    alert("Your browser doesn't support HLS!");
-    window.location.href = "index.html";
+    // Fallback to iframe for non-HLS (Google Drive, pCloud)
+    video.style.display = "none";
+    toggleBtn.style.display = "none";
+    hideSpinner();
+
+    const iframe = document.createElement("iframe");
+    iframe.src = url;
+    iframe.width = "90%";
+    iframe.height = "600";
+    iframe.allowFullscreen = true;
+    iframe.style.border = "3px solid #ffcc00";
+    iframe.style.borderRadius = "15px";
+    iframe.style.background = "#000";
+    document.body.insertBefore(iframe, document.querySelector("br"));
   }
 }
 
