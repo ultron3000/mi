@@ -2,102 +2,436 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Mission : Impossible</title>
+  <title>Mission: Impossible Collection</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap');
+    
+    :root {
+      --primary: #FFCC00;
+      --secondary: #1a1a1a;
+      --accent: #e50914;
+      --dark: #0d0d0d;
+      --light: #f8f8f8;
+    }
+    
     body {
-      background: black;
-      color: #ffcc00;
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto Condensed', sans-serif;
+      background-color: var(--dark);
+      color: var(--light);
       margin: 0;
-      padding: 20px;
-      text-align: center;
+      padding: 0;
+      min-height: 100vh;
     }
-    h1 {
-      margin-bottom: 20px;
-      font-size: 2em;
+    
+    .movie-card {
+      transition: all 0.3s ease;
+      transform-origin: center;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
-    .movies {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
+    
+    .movie-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 15px 30px rgba(255, 204, 0, 0.2);
     }
-    .movie {
-      background: #222;
-      border: 2px solid #ffcc00;
-      border-radius: 12px;
-      width: 200px;
-      padding: 10px;
-      cursor: pointer;
-      transition: transform 0.3s;
-    }
-    .movie:hover {
-      transform: scale(1.05);
-      background: #333;
-    }
-    .movie img {
-      width: 100%;
-      height: 280px;
+    
+    .movie-poster {
+      aspect-ratio: 2/3;
       object-fit: cover;
-      border-radius: 10px;
+      transition: all 0.3s ease;
     }
-    .movie-title {
-      margin-top: 10px;
-      font-size: 1em;
-      font-weight: bold;
+    
+    .movie-card:hover .movie-poster {
+      filter: brightness(1.1);
     }
-  
-    @media (max-width: 600px) {
-      .movies {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
+    
+    .gradient-overlay {
+      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    .filter-btn.active {
+      background-color: var(--primary);
+      color: var(--dark);
+    }
+    
+    .hero-section {
+      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+    }
+    
+    .theme-switch {
+      transition: all 0.3s ease;
+    }
+    
+    .theme-switch:hover {
+      transform: rotate(180deg);
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
       }
-      .movie {
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .movie img {
-        height: auto;
+      50% {
+        opacity: 0.5;
       }
     }
-
+    
+    .loading {
+      animation: pulse 1.5s infinite;
+    }
+    
+    .skeleton {
+      background-color: #1a1a1a;
+      background-image: linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
+    }
+    
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
   </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col">
+  <!-- Header with Theme Toggle -->
+  <header class="bg-black/90 backdrop-blur-md sticky top-0 z-50 shadow-lg">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fas fa-film text-yellow-400 text-2xl"></i>
+        <h1 class="text-2xl font-bold text-yellow-400">M:I Collection</h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button id="themeToggle" class="theme-switch bg-gray-800 hover:bg-gray-700 text-yellow-400 p-2 rounded-full transition-all duration-300">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button id="menuToggle" class="md:hidden text-yellow-400">
+          <i class="fas fa-bars text-2xl"></i>
+        </button>
+      </div>
+    </div>
+  </header>
 
-<h1>🚨 Mission : Impossible Collection</h1>
+  <!-- Hero Section -->
+  <section class="hero-section relative flex items-center justify-center py-16 md:py-24">
+    <div class="container mx-auto px-4 text-center">
+      <div class="max-w-3xl mx-auto">
+        <h1 class="text-4xl md:text-6xl font-bold text-yellow-400 mb-4">Mission: Impossible</h1>
+        <p class="text-xl md:text-2xl text-gray-300 mb-8">The Complete Collection of Ethan Hunt's Most Daring Missions</p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <button class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 px-6 rounded-full transition-all duration-300 flex items-center">
+            <i class="fas fa-play mr-2"></i> Watch Trailer
+          </button>
+          <button class="bg-transparent border-2 border-yellow-400 hover:bg-yellow-400/10 text-yellow-400 font-bold py-3 px-6 rounded-full transition-all duration-300 flex items-center">
+            <i class="fas fa-info-circle mr-2"></i> About the Series
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<div class="movies" id="movies"></div>
+  <!-- Main Content -->
+  <main class="flex-grow container mx-auto px-4 py-8">
+    <!-- Filters and Search -->
+    <div class="mb-8">
+      <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+        <div class="w-full md:w-auto">
+          <div class="relative">
+            <input type="text" id="searchInput" placeholder="Search movies..." class="w-full md:w-64 bg-gray-800 border border-gray-700 rounded-full py-2 px-4 pl-10 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400">
+            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-all" data-filter="all">All</button>
+          <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-all" data-filter="1990s">1990s</button>
+          <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-all" data-filter="2000s">2000s</button>
+          <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-all" data-filter="2010s">2010s</button>
+          <button class="filter-btn px-4 py-2 rounded-full bg-gray-800 text-white hover:bg-gray-700 transition-all" data-filter="2020s">2020s</button>
+        </div>
+      </div>
+    </div>
 
-<script>
-const movies = [
-  { title: "Mission: Impossible (1996)", video: "https://sdqm.ghwillawkni.sbs:443/v4/us/6r8pz/index-f1-v1-a1.txt", image: "https://media-cache.cinematerial.com/p/500x/gfvt9wkn/mission-impossible-movie-cover.jpg?v=1734193841" },
-  { title: "Mission: Impossible II (2000)", video: "https://s9dz.alenapark.sbs:443/v4/db/irywa/index-f2-v1-a1.txt", image: "https://image.tmdb.org/t/p/original/12mI7kU22nJrmtAgGcDP8tbAz4a.jpg" },
-  { title: "Mission: Impossible III (2006)", video: "https://sxic.biggsupndfun.sbs:443/v4/hz/lzvwr/index-f2-v1-a1.txt", image: "https://media-cache.cinematerial.com/p/500x/ewsqdvgr/mission-impossible-iii-movie-cover.jpg?v=1464919488" },
-  { title: "Ghost Protocol (2011)", video: "https://s3ae.cedekkerohartf.sbs/v4/36/pteco/index-f2-v1-a1.txt", image: "https://m.media-amazon.com/images/I/811NSP-z3bL._AC_UF1000,1000_QL80_.jpg" },
-  { title: "Rogue Nation (2015)", video: "https://spuc.biggsupndfun.sbs:443/v4/db/3x3u6/index-f2-v1-a1.txt", image: "https://www.jbhifi.com.au/cdn/shop/products/806399-Product-0-I_f04f6def-c8a6-44be-94e5-612b61f56e35.jpg?v=1571711638" },
-  { title: "Fallout (2018)", video: "https://sojg.sperlinglayma.sbs/v4/np/xd56t/cf-master.txt?v=1733597826", image: "https://posterspy.com/wp-content/uploads/2018/08/MI6.jpg" },
-  { title: "Dead Reckoning Part One (2023)", video: "https://sojg.yevettesha.sbs:443/v4/6s/mphx1/index-f2-v1-a1.txt", image: "https://upload.wikimedia.org/wikipedia/en/e/ed/Mission-_Impossible_%E2%80%93_Dead_Reckoning_Part_One_poster.jpg" },
-  { title: "The Final Reckoning (2025)", video: "https://sojg.yevettesha.sbs:443/v4/6s/mphx1/index-f2-v1-a1.txt", image: "https://preview.redd.it/new-final-reckoning-poster-v0-99llptunx1ge1.jpeg?auto=webp&s=9604de4c4d65fa106ff30080d4996f6773f606c1" },
-];
+    <!-- Movies Grid -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold text-yellow-400 mb-6 flex items-center">
+        <i class="fas fa-list mr-2"></i> All Missions
+      </h2>
+      
+      <div id="loadingIndicator" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        <!-- Skeleton Loaders -->
+        <div class="skeleton h-80 rounded-xl"></div>
+        <div class="skeleton h-80 rounded-xl"></div>
+        <div class="skeleton h-80 rounded-xl"></div>
+        <div class="skeleton h-80 rounded-xl"></div>
+        <div class="skeleton h-80 rounded-xl"></div>
+      </div>
+      
+      <div id="moviesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 hidden">
+        <!-- Movie cards will be inserted here by JavaScript -->
+      </div>
+    </div>
 
-const container = document.getElementById('movies');
-movies.forEach((movie, index) => {
-  const div = document.createElement('div');
-  div.className = 'movie';
-  div.innerHTML = `
-    <img src="${movie.image}" alt="${movie.title}">
-    <div class="movie-title">${movie.title}</div>
-  `;
-  div.onclick = () => {
-    const url = `player.html?title=${encodeURIComponent(movie.title)}&video=${encodeURIComponent(movie.video)}&index=${index}`;
-    window.location.href = url;
-  };
-  container.appendChild(div);
-});
-</script>
+    <!-- Featured Mission -->
+    <div class="bg-gradient-to-r from-black via-gray-900 to-black rounded-xl overflow-hidden mb-12">
+      <div class="flex flex-col md:flex-row">
+        <div class="md:w-1/3 relative">
+          <img src="https://upload.wikimedia.org/wikipedia/en/e/ed/Mission-_Impossible_%E2%80%93_Dead_Reckoning_Part_One_poster.jpg" alt="Featured Mission" class="w-full h-full object-cover">
+          <div class="absolute inset-0 gradient-overlay"></div>
+          <div class="absolute bottom-4 left-4">
+            <span class="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded">NEW RELEASE</span>
+          </div>
+        </div>
+        <div class="md:w-2/3 p-6">
+          <h3 class="text-2xl font-bold text-yellow-400 mb-2">Featured Mission</h3>
+          <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Dead Reckoning Part One (2023)</h2>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="bg-gray-800 text-white text-xs px-3 py-1 rounded-full">Action</span>
+            <span class="bg-gray-800 text-white text-xs px-3 py-1 rounded-full">Adventure</span>
+            <span class="bg-gray-800 text-white text-xs px-3 py-1 rounded-full">Thriller</span>
+          </div>
+          <p class="text-gray-300 mb-6">Ethan Hunt and his IMF team must track down a terrifying new weapon that threatens all of humanity before it falls into the wrong hands. With control of the future and the fate of the world at stake, a deadly race around the globe begins.</p>
+          <div class="flex flex-wrap gap-4">
+            <button class="bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 px-6 rounded-full transition-all duration-300 flex items-center">
+              <i class="fas fa-play mr-2"></i> Watch Now
+            </button>
+            <button class="bg-transparent border border-yellow-400 hover:bg-yellow-400/10 text-yellow-400 font-bold py-2 px-6 rounded-full transition-all duration-300 flex items-center">
+              <i class="fas fa-plus mr-2"></i> Add to List
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 
+  <!-- Footer -->
+  <footer class="bg-black/90 text-gray-400 py-8">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-film text-yellow-400 text-2xl"></i>
+            <span class="text-xl font-bold text-yellow-400">M:I Collection</span>
+          </div>
+          <p class="text-sm mt-2">The ultimate Mission: Impossible experience</p>
+        </div>
+        <div class="flex space-x-6">
+          <a href="#" class="hover:text-yellow-400 transition-colors"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="hover:text-yellow-400 transition-colors"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="hover:text-yellow-400 transition-colors"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="hover:text-yellow-400 transition-colors"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-6 pt-6 text-sm text-center">
+        <p>&copy; 2023 Mission: Impossible Collection. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Movie data
+    const movies = [
+      { 
+        title: "Mission: Impossible (1996)", 
+        video: "https://sdqm.ghwillawkni.sbs:443/v4/us/6r8pz/index-f1-v1-a1.txt", 
+        image: "https://media-cache.cinematerial.com/p/500x/gfvt9wkn/mission-impossible-movie-cover.jpg?v=1734193841",
+        year: 1996,
+        rating: 7.1,
+        duration: "1h 50m",
+        tags: ["Action", "Spy", "Thriller"]
+      },
+      { 
+        title: "Mission: Impossible II (2000)", 
+        video: "https://s9dz.alenapark.sbs:443/v4/db/irywa/index-f2-v1-a1.txt", 
+        image: "https://image.tmdb.org/t/p/original/12mI7kU22nJrmtAgGcDP8tbAz4a.jpg",
+        year: 2000,
+        rating: 6.1,
+        duration: "2h 3m",
+        tags: ["Action", "Adventure", "Spy"]
+      },
+      { 
+        title: "Mission: Impossible III (2006)", 
+        video: "https://sxic.biggsupndfun.sbs:443/v4/hz/lzvwr/index-f2-v1-a1.txt", 
+        image: "https://media-cache.cinematerial.com/p/500x/ewsqdvgr/mission-impossible-iii-movie-cover.jpg?v=1464919488",
+        year: 2006,
+        rating: 6.9,
+        duration: "2h 6m",
+        tags: ["Action", "Adventure", "Thriller"]
+      },
+      { 
+        title: "Ghost Protocol (2011)", 
+        video: "https://s3ae.cedekkerohartf.sbs/v4/36/pteco/index-f2-v1-a1.txt", 
+        image: "https://m.media-amazon.com/images/I/811NSP-z3bL._AC_UF1000,1000_QL80_.jpg",
+        year: 2011,
+        rating: 7.4,
+        duration: "2h 13m",
+        tags: ["Action", "Adventure", "Spy"]
+      },
+      { 
+        title: "Rogue Nation (2015)", 
+        video: "https://spuc.biggsupndfun.sbs:443/v4/db/3x3u6/index-f2-v1-a1.txt", 
+        image: "https://www.jbhifi.com.au/cdn/shop/products/806399-Product-0-I_f04f6def-c8a6-44be-94e5-612b61f56e35.jpg?v=1571711638",
+        year: 2015,
+        rating: 7.4,
+        duration: "2h 11m",
+        tags: ["Action", "Adventure", "Thriller"]
+      },
+      { 
+        title: "Fallout (2018)", 
+        video: "https://sojg.sperlinglayma.sbs/v4/np/xd56t/cf-master.txt?v=1733597826", 
+        image: "https://posterspy.com/wp-content/uploads/2018/08/MI6.jpg",
+        year: 2018,
+        rating: 7.7,
+        duration: "2h 28m",
+        tags: ["Action", "Adventure", "Thriller"]
+      },
+      { 
+        title: "Dead Reckoning Part One (2023)", 
+        video: "https://sojg.yevettesha.sbs:443/v4/6s/mphx1/index-f2-v1-a1.txt", 
+        image: "https://upload.wikimedia.org/wikipedia/en/e/ed/Mission-_Impossible_%E2%80%93_Dead_Reckoning_Part_One_poster.jpg",
+        year: 2023,
+        rating: 8.1,
+        duration: "2h 43m",
+        tags: ["Action", "Adventure", "Spy"]
+      },
+      { 
+        title: "The Final Reckoning (2025)", 
+        video: "https://sojg.yevettesha.sbs:443/v4/6s/mphx1/index-f2-v1-a1.txt", 
+        image: "https://preview.redd.it/new-final-reckoning-poster-v0-99llptunx1ge1.jpeg?auto=webp&s=9604de4c4d65fa106ff30080d4996f6773f606c1",
+        year: 2025,
+        rating: null,
+        duration: "Coming Soon",
+        tags: ["Action", "Adventure", "Spy"]
+      },
+    ];
+
+    // DOM Elements
+    const moviesGrid = document.getElementById('moviesGrid');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const searchInput = document.getElementById('searchInput');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const themeToggle = document.getElementById('themeToggle');
+
+    // Theme Management
+    let darkMode = true;
+
+    function toggleTheme() {
+      darkMode = !darkMode;
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+        themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        document.body.style.backgroundColor = 'var(--dark)';
+      } else {
+        document.documentElement.classList.remove('dark');
+        themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        document.body.style.backgroundColor = 'var(--light)';
+      }
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+
+    // Initialize movies
+    function renderMovies(moviesToRender) {
+      moviesGrid.innerHTML = '';
+      
+      moviesToRender.forEach((movie, index) => {
+        const movieCard = document.createElement('div');
+        movieCard.className = 'movie-card bg-gray-800 rounded-xl overflow-hidden relative group';
+        movieCard.innerHTML = `
+          <div class="relative">
+            <img src="${movie.image}" alt="${movie.title}" class="movie-poster w-full rounded-t-xl">
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-300"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-4 gradient-overlay">
+              <div class="flex justify-between items-center">
+                <span class="text-yellow-400 font-bold">${movie.rating ? `${movie.rating}/10` : 'TBA'}</span>
+                <span class="text-white text-sm bg-black/70 px-2 py-1 rounded">${movie.duration}</span>
+              </div>
+            </div>
+            <div class="absolute top-2 right-2 bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded-full">
+              ${movie.year}
+            </div>
+          </div>
+          <div class="p-4">
+            <h3 class="text-white font-bold text-lg mb-1 truncate">${movie.title}</h3>
+            <div class="flex flex-wrap gap-1 mt-2">
+              ${movie.tags.map(tag => `<span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">${tag}</span>`).join('')}
+            </div>
+            <button class="mt-3 w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-2 px-4 rounded-full transition-all duration-300 flex items-center justify-center">
+              <i class="fas fa-play mr-2"></i> Watch
+            </button>
+          </div>
+        `;
+        
+        movieCard.addEventListener('click', () => {
+          const url = `player.html?title=${encodeURIComponent(movie.title)}&video=${encodeURIComponent(movie.video)}&index=${index}`;
+          window.location.href = url;
+        });
+        
+        moviesGrid.appendChild(movieCard);
+      });
+    }
+
+    // Filter and Search functionality
+    function filterMovies() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+      
+      let filteredMovies = movies.filter(movie => {
+        const matchesSearch = movie.title.toLowerCase().includes(searchTerm);
+        let matchesFilter = true;
+        
+        if (activeFilter !== 'all') {
+          const decade = Math.floor(movie.year / 10) * 10;
+          matchesFilter = activeFilter === `${decade}s`;
+        }
+        
+        return matchesSearch && matchesFilter;
+      });
+      
+      renderMovies(filteredMovies);
+    }
+
+    // Initialize
+    function init() {
+      // Simulate loading
+      setTimeout(() => {
+        loadingIndicator.classList.add('hidden');
+        moviesGrid.classList.remove('hidden');
+        renderMovies(movies);
+      }, 1000);
+      
+      // Event listeners
+      searchInput.addEventListener('input', filterMovies);
+      
+      filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          filterMovies();
+        });
+      });
+      
+      // Set default filter
+      document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+    }
+
+    // Start the app
+    init();
+  </script>
 </body>
 </html>
